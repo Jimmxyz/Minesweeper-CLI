@@ -1,33 +1,35 @@
 # Minesweeper-CLI
 A multiplatform minesweeper in the CLI
-# How to run it ?
-## installation
+
+# Installation
 First download the zip file and then unzip it.
 >[!CAUTION]
 >You also need to have java installed
+
 >[!TIP]
->If you run the bash file on debian based distribution java will be automaticly installed
-## run it
-### On linux :
+>On debian and ubuntu based distribution java will be automaticly installed at the first launch
+# Run it
+## Linux :
 Change the terminal locaion to be in the folder.
 Then use this command : `bash ./launch.sh`
-### On macos :
+## Mac OS :
 >[!WARNING]
 >The program was not tested on macos
 
 Change the terminal locaion to be in the folder.
 Then use this command : `bash ./launch.sh`
 
-### On windows :
+## Windows :
 >[!WARNING]
->There are no bat or powershel file
+>This cli program don't work on windows cmd or powershell
+### Install with WSL
+1. On your powershell type `wsl --install`
 
-#### Use WSL
-1. Install WSL
-2. Follow the instruction for linux
-#### Run manualy the jar file
-1. Install java on window
-2. Run the jar file
+    By default the distribution will be ubuntu wich is a debian based so you don't have to change it.
+   
+3. Run wsl on your powershell by type `wsl.exe`
+
+4. Follow the installation instruction for linux
 
 # Credit
 Created by @Jimmxyz on github
