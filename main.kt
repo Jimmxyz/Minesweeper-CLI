@@ -1,4 +1,3 @@
-// TEST will be removed
 import kotlin.random.Random
 import java.io.InputStreamReader
 
@@ -14,7 +13,7 @@ fun main() {
     print("\u001b[2K\r")
     val width = width_input.toIntOrNull() ?: 10
     val height = height_input.toIntOrNull() ?: 10
-    val grid = gen_grid(height, width, 20)
+    var grid = gen_grid(height, width, 20)
     val cursor_x = 0
     val cursor_y = 0
     grid_readdy(height, width)
@@ -46,7 +45,7 @@ fun print_grid(grid_to_display: Array<Array<Int>>,height: Int = 9, width: Int = 
         for (j in 0 until width) {
             //Bck color
             var bck_color = "none"
-            if(grid_to_display[i][j] == 0) {
+            if(grid_to_display[i][j] == 0 || grid_to_display[i][j] == 10) {
                 if((i % 2 == 0 && j % 2 == 0) || (i % 2 != 0 && j % 2 != 0)) {
                     bck_color = "\u001b[48;2;88;168;88m"
                 } else {
@@ -86,19 +85,24 @@ fun print_grid(grid_to_display: Array<Array<Int>>,height: Int = 9, width: Int = 
                 font_color = "\u001b[38;2;133;133;131m"
             } 
             else if (grid_to_display[i][j] == 10) {
-                font_color = "\u001b[38;2;255;0;0m"
+                font_color = "\u001b[38;2;210;0;0m"
             } 
             else{
                 font_color = "\u001b[38;2;0;0;0m"
             }
             // Print the cell
-            if(i == cursor_i && j == cursor_j && grid_to_display[i][j] != 0 && grid_to_display[i][j] != 9) {
+            if(i == cursor_i && j == cursor_j && grid_to_display[i][j] != 0 && grid_to_display[i][j] != 9 && grid_to_display[i][j] != 10) {
                 print("\u001B[1m"+ bck_color + cursor_color + "[" +  font_color  + grid_to_display[i][j] + "\u001b[0m" + cursor_color + bck_color + "\u001B[1m]\u001b[0m")
             } else if(i == cursor_i && j == cursor_j && (grid_to_display[i][j] == 0 || grid_to_display[i][j] == 9)) {
                 print("\u001B[1m"+bck_color + cursor_color + "[ " + font_color + "\u001b[0m" + cursor_color + bck_color + "\u001B[1m]\u001b[0m")
-            } 
+            } else if(i == cursor_i && j == cursor_j && grid_to_display[i][j] == 10) {
+                print("\u001B[1m"+bck_color + cursor_color + "[" + font_color + "F\u001b[0m" + cursor_color + bck_color + "\u001B[1m]\u001b[0m")
+            }
             else if (grid_to_display[i][j] == 9 || grid_to_display[i][j] == 0) {
                 print("\u001B[1m"+bck_color + font_color + "   " + "\u001b[0m")
+            }
+            else if (grid_to_display[i][j] == 10) {
+                print("\u001B[1m"+bck_color + font_color + " F " + "\u001b[0m")
             }
             else {
                 print("\u001B[1m"+bck_color + font_color + " " + grid_to_display[i][j] + " " + "\u001b[0m")
@@ -120,6 +124,7 @@ fun grid_readdy(height: Int, width: Int) {
 }
 
 fun loop_main(width: Int, height: Int, cursor_x_imported: Int, cursor_y_imported: Int, grid: Array<Array<Int>>, visual_grid_imported: Array<Array<Int>>) {
+    var first = true
     var cursor_x = cursor_x_imported 
     var cursor_y = cursor_y_imported
     var visual_grid = visual_grid_imported
@@ -157,13 +162,31 @@ fun loop_main(width: Int, height: Int, cursor_x_imported: Int, cursor_y_imported
                 }
             }
             13 -> {
+                if(first == true){
+                    first = false
+                    remove_mine(grid,height,width,cursor_x,cursor_y)
+                }
                 if (grid[cursor_x][cursor_y] == 1) {
                     println("Game Over! You hit a mine!")
                     break@loop
                     } else {
-                        visual_grid[cursor_x][cursor_y] = get_adjacent_mines(cursor_x, cursor_y, grid,width,height)
+                        update_visual_grid(visual_grid, grid, cursor_x, cursor_y, width, height)
                         print_grid(visual_grid,height,width,cursor_x,cursor_y)
+                        if (win_check(grid, visual_grid, height, width)) {
+                            print("\u001b[1A")
+                            print("\u001b[2K\r")
+                            println("Congratulations! You've cleared the minefield!")
+                            break@loop
+                        }
                     }
+            }
+            32 -> {
+                if (visual_grid[cursor_x][cursor_y] == 0) {
+                    visual_grid[cursor_x][cursor_y] = 10 // Marking a mine
+                } else if (visual_grid[cursor_x][cursor_y] == 10) {
+                    visual_grid[cursor_x][cursor_y] = 0 // Unmarking a mine
+                }
+                print_grid(visual_grid,height,width,cursor_x,cursor_y)
             }
             'q'.code, 'Q'.code -> {
                 println("Exiting Minesweeper CLI...")
@@ -194,4 +217,52 @@ fun get_adjacent_mines(x: Int, y: Int, grid: Array<Array<Int>>,width:Int,height:
         count = 9
     }
     return count
+}
+
+fun update_visual_grid(visual_grid: Array<Array<Int>>, grid: Array<Array<Int>>, cursor_x: Int, cursor_y: Int, width: Int, height: Int) {
+        var cursor_x_imported = cursor_x
+        var cursor_y_imported = cursor_y
+        if (cursor_x_imported < 0 || cursor_x_imported >= height || cursor_y_imported < 0 || cursor_y_imported >= width) {
+            return
+        }
+        if (visual_grid[cursor_x_imported][cursor_y_imported] != 0) {
+            return
+        }
+        visual_grid[cursor_x_imported][cursor_y_imported] = get_adjacent_mines(cursor_x_imported, cursor_y_imported, grid, width, height)
+        if(visual_grid[cursor_x_imported][cursor_y_imported] == 9) {
+            update_visual_grid(visual_grid, grid, cursor_x_imported - 1, cursor_y_imported - 1, width, height)
+            update_visual_grid(visual_grid, grid, cursor_x_imported - 1, cursor_y_imported, width, height)
+            update_visual_grid(visual_grid, grid, cursor_x_imported - 1, cursor_y_imported + 1, width, height)
+            update_visual_grid(visual_grid, grid, cursor_x_imported, cursor_y_imported -1, width, height)
+            update_visual_grid(visual_grid, grid, cursor_x_imported, cursor_y_imported +1, width, height)
+            update_visual_grid(visual_grid, grid, cursor_x_imported +1, cursor_y_imported -1, width, height)
+            update_visual_grid(visual_grid, grid, cursor_x_imported +1, cursor_y_imported, width, height)
+            update_visual_grid(visual_grid, grid, cursor_x_imported +1, cursor_y_imported +1, width, height)
+        }
+}
+
+fun win_check(grid: Array<Array<Int>>, visual_grid: Array<Array<Int>>, height: Int, width: Int): Boolean {
+    for (i in 0 until height) {
+        for (j in 0 until width) {
+            if ((visual_grid[i][j] == 0 || visual_grid[i][j] == 10) && grid[i][j] != 1) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
+
+fun remove_mine(grid: Array<Array<Int>>, height: Int, width: Int, cursor_x: Int, cursor_y: Int) {
+    grid[cursor_x][cursor_y] = 0
+    for (i in -1..1) {
+        for (j in -1..1) {
+            val newX = cursor_x + i
+            val newY = cursor_y + j
+            
+            if (newX in 0 until height && newY in 0 until width) {
+                grid[newX][newY] = 0
+            }
+        }
+    }
 }
