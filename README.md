@@ -16,17 +16,21 @@ First download the zip file and then unzip it.
 >You also need to have java installed.
 
 >[!TIP]
->On debian and ubuntu based distribution java will be automaticly installed at the first launch.
+>On debian, ubuntu, fedora, suse and arch based distribution java will be automaticly installed.
 # Run it
 ## Linux :
-Change the terminal locaion to be in the folder.
-Then use this command : `bash ./launch.sh`.
+Change the terminal locaion to be in the folder 'minesweeper_install'.
+Then use this command : `bash ./install.sh`.
+Then follow the instruction.
 ## Mac OS :
 >[!WARNING]
 >The program was not tested on macos.
-
-Change the terminal locaion to be in the folder.
-Then use this command : `bash ./launch.sh`.
+Install java.
+Then change the terminal locaion to be in the folder 'minesweeper_install'.
+Then use this command : `chmod +x install.sh`.
+Then use this command : `sudo xattr -d com.apple.quarantine install.sh`.
+The use this command : `./install.sh`. 
+Then follow the instruction.
 
 ## Windows :
 >[!WARNING]
@@ -38,7 +42,16 @@ Then use this command : `bash ./launch.sh`.
    
 3. Run wsl on your powershell by type `wsl.exe`.
 
-4. Follow the installation instruction for linux.
+4. Install java on wsl.
+
+5. Change the terminal location to the folder 'minesweeper_install/src/'
+
+6. Use this command `chmod +x launch.sh`
+
+7. Then use this command to launch the game `./launch.sh`.
+
+>[!IMPORTANT]
+>You have to be in the folder 'minesweeper_install/src/' or indicate the path.
 
 # Credit
 Created by @Jimmxyz on github
