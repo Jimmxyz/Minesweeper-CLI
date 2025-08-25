@@ -1,26 +1,20 @@
 import kotlin.random.Random
+import java.io.BufferedReader
 import java.io.InputStreamReader
 
 fun main() {
     println("=== Minesweeper CLI ===")
-    print("Please enter the width of the grid: ")
-    val width_input = readLine() ?: ""
-    print("\u001b[1A")
-    print("\u001b[2K\r")
-    print("Please enter the height of the grid: ")
-    val height_input = readLine() ?: ""
-    print("\u001b[1A")
-    print("\u001b[2K\r")
-    val width = width_input.toIntOrNull() ?: 10
-    val height = height_input.toIntOrNull() ?: 10
-    var grid = gen_grid(height, width, 20)
+    val width_input = ""
+    val height_input = ""
     val cursor_x = 0
     val cursor_y = 0
+    //blocking touch
+    Runtime.getRuntime().exec(arrayOf("sh","-c","stty raw -echo < /dev/tty")).waitFor()
+    val (width,height) = choose_size()
+    var grid = gen_grid(height, width, 20)
     grid_readdy(height, width)
     val visual_grid = visual_grid_gen(height, width)
     print_grid(visual_grid,height,width,cursor_x,cursor_y)
-    //blocking touch
-    Runtime.getRuntime().exec(arrayOf("sh","-c","stty raw -echo < /dev/tty")).waitFor()
     loop_main(width, height, cursor_x, cursor_y, grid, visual_grid)
     Runtime.getRuntime().exec(arrayOf("sh","-c","stty sane < /dev/tty")).waitFor()
     print("\u001b[2K\r")
@@ -116,6 +110,7 @@ fun print_grid(grid_to_display: Array<Array<Int>>,height: Int = 9, width: Int = 
 
 fun grid_readdy(height: Int, width: Int) {
     for (i in 0..height -1) {
+        print("\u001b[2K\r")
         for (j in 0..width - 1) {
             print("---")
         }
@@ -265,4 +260,191 @@ fun remove_mine(grid: Array<Array<Int>>, height: Int, width: Int, cursor_x: Int,
             }
         }
     }
+}
+
+fun choose_size(): Pair<Int, Int> {
+    println("Please enter the width of the grid: ")
+    var width_input = 10
+    var width_cursor = 10
+    var height_input = 10
+    var height_cursor = 10
+    print("\u001b[2K\r")
+    print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(width_cursor -5)) + "\u001b[0m" + (" ".repeat(46 - (width_cursor -5))) + " " + width_cursor + " " .repeat(45) + "]\u001b[0m")
+    val reader = InputStreamReader(System.`in`)
+    loop@ while (true) {
+        val ch = reader.read()
+        if (ch == - 1) break
+        when (ch) {
+            27 -> {
+                val nextChar = reader.read()
+                if (nextChar == 91) {
+                    when (reader.read()) {
+                        68 -> {
+                            if (width_cursor > 5) {
+                                width_cursor -= 1
+                            }
+                            else {
+                                width_cursor = 5
+                            }
+                        }
+                        67 -> {
+                            if (width_cursor < 100) {
+                                width_cursor += 1
+                            }else {
+                                width_cursor = 100
+                            }
+                        }
+                    }
+                }
+            }
+            13 -> {
+                width_input = width_cursor
+                break@loop
+            }
+            32 -> {
+                width_input = -10
+                break@loop
+            }
+        }
+        if(width_cursor - 5 < 47) {
+            var empty = ""
+            if (width_cursor > 9){
+                empty = " "
+            }
+            else{
+                empty = "  "
+            }
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(width_cursor -5)) + "\u001b[0m" + (" ".repeat(46 - (width_cursor -5))) + empty + width_cursor + " " .repeat(45) + "]\u001b[0m")
+        } else if( width_cursor - 5 == 47){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-\u001b[0m52" + " " .repeat(45) + "]\u001b[0m")
+        }else if( width_cursor - 5 == 48){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-5\u001b[0m3" + " " .repeat(45) + "]\u001b[0m")
+        } 
+        else if( width_cursor - 5 == 49){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-54\u001b[0m" + " " .repeat(45) + "]\u001b[0m")
+        } 
+        else if (width_cursor - 5 > 49 && width_cursor - 5 < 95){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-" + width_cursor + "-".repeat(width_cursor - 54) + "\u001b[0m" + (" ".repeat(46 - (width_cursor - 53))) + "]")
+        }
+        else{
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "100" + "-".repeat(45) + "]\u001b[0m")
+        }
+    }
+    if (width_input == -10) {
+        print("\u001b[2K\r")
+        print("\u001b[1A")
+        print("\u001b[2K\r")
+        Runtime.getRuntime().exec(arrayOf("sh","-c","stty sane < /dev/tty")).waitFor()
+        print("Please enter the width of the grid (manualy): ")
+        width_input = readLine()?.toIntOrNull() ?: 10
+        Runtime.getRuntime().exec(arrayOf("sh","-c","stty raw -echo < /dev/tty")).waitFor()
+        print("\u001b[2K\r")
+    }
+    else{
+        print("\u001b[2K\r")
+        print("\u001b[1A")
+        print("\u001b[2K\r")
+        width_input = width_cursor
+    }
+    println("Please enter the height of the grid: ")
+    print("\u001b[2K\r")
+    height_cursor = width_cursor
+    var empty = ""
+            if (height_cursor > 9){
+                empty = " "
+            }
+            else{
+                empty = "  "
+            }
+    print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(height_cursor -5)) + "\u001b[0m" + (" ".repeat(46 - (height_cursor -5))) + empty + height_cursor + " " .repeat(45) + "]\u001b[0m")
+    loop@ while (true) {
+        val ch = reader.read()
+        if (ch == - 1) break
+        when (ch) {
+            27 -> {
+                val nextChar = reader.read()
+                if (nextChar == 91) {
+                    when (reader.read()) {
+                        68 -> {
+                            if (height_cursor > 5) {
+                                height_cursor -= 1
+                            }
+                            else {
+                                height_cursor = 5
+                            }
+                        }
+                        67 -> {
+                            if (height_cursor < 100) {
+                                height_cursor += 1
+                            }else {
+                                height_cursor = 100
+                            }
+                        }
+                    }
+                }
+            }
+            13 -> {
+                height_input = height_cursor
+                break@loop
+            }
+            32 -> {
+                height_input = -10
+                break@loop
+            }
+        }
+        if(height_cursor - 5 < 47) {
+            var empty = ""
+            if (height_cursor > 9){
+                empty = " "
+            }
+            else{
+                empty = "  "
+            }
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(height_cursor -5)) + "\u001b[0m" + (" ".repeat(46 - (height_cursor -5))) + empty + height_cursor + " " .repeat(45) + "]\u001b[0m")
+        } else if( height_cursor - 5 == 47){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-\u001b[0m52" + " " .repeat(45) + "]\u001b[0m")
+        }else if( height_cursor - 5 == 48){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-5\u001b[0m3" + " " .repeat(45) + "]\u001b[0m")
+        } 
+        else if( height_cursor - 5 == 49){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-54\u001b[0m" + " " .repeat(45) + "]\u001b[0m")
+        } 
+        else if (height_cursor - 5 > 49 && height_cursor - 5 < 95){
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "-" + height_cursor + "-".repeat(height_cursor - 54) + "\u001b[0m" + (" ".repeat(46 - (height_cursor - 53))) + "]")
+        }
+        else{
+            print("\u001b[2K\r")
+            print("\u001b[48;2;255;255;255m\u001b[38;2;0;0;0m[" + ("-".repeat(46)) + "100" + "-".repeat(45) + "]\u001b[0m")
+        }
+    }
+    if (height_input == -10) {
+        print("\u001b[2K\r")
+        print("\u001b[1A")
+        print("\u001b[2K\r")
+        Runtime.getRuntime().exec(arrayOf("sh","-c","stty sane < /dev/tty")).waitFor()
+        print("Please enter the height of the grid (manualy): ")
+        height_input = readLine()?.toIntOrNull() ?: 10
+        Runtime.getRuntime().exec(arrayOf("sh","-c","stty raw -echo < /dev/tty")).waitFor()
+        print("\u001b[2K\r")
+    }
+    else{
+        print("\u001b[2K\r")
+        print("\u001b[1A")
+        print("\u001b[2K\r")
+        height_input = height_cursor
+    }
+    val width = width_input ?: 10
+    val height = height_input ?: 10
+    return Pair(width, height)
 }
