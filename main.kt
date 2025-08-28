@@ -30,13 +30,12 @@ fun visual_grid_gen(rows: Int, cols: Int): Array<Array<Int>> {
 }
 
 fun print_grid(grid_to_display: Array<Array<Int>>,height: Int = 9,width: Int = 9,cursor_i: Int = 0,cursor_j: Int = 0) {
+    var update = ""
     repeat(height) {
-        print("\u001b[1A") 
-        print("\u001b[2K\r")
+        update+="\u001b[1A" 
     }
-
     for (i in 0 until height) {
-        print("\u001b[2K\r")
+        update += "\u001b[2K\r"
         for (j in 0 until width) {
             val bck_color = if (grid_to_display[i][j] == 0 || grid_to_display[i][j] == 10) {
                 if ((i + j) % 2 == 0) "\u001b[48;2;88;168;88m" else "\u001b[48;2;82;153;82m"
@@ -63,7 +62,7 @@ fun print_grid(grid_to_display: Array<Array<Int>>,height: Int = 9,width: Int = 9
                     10 -> "F"
                     else -> grid_to_display[i][j].toString()
                 }
-                print("\u001B[1m$bck_color$cursor_color[$font_color$content$cursor_color$bck_color\u001B[1m]\u001b[0m")
+                update += "\u001B[1m$bck_color$cursor_color[$font_color$content$cursor_color$bck_color\u001B[1m]\u001b[0m"
             }
             else {
                 val content = when (grid_to_display[i][j]) {
@@ -71,15 +70,14 @@ fun print_grid(grid_to_display: Array<Array<Int>>,height: Int = 9,width: Int = 9
                     10 -> " F "
                     else -> " ${grid_to_display[i][j]} "
                 }
-                print("\u001B[1m$bck_color$font_color$content\u001b[0m")
+                update += "\u001B[1m$bck_color$font_color$content\u001b[0m"
             }
         }
-        println()
+        update += "\n"
     }
-
-    // Dernière ligne d’instruction
-    print("\u001b[2K\r")
-    println("Press Q to quit, arrow to move, enter to select, and space to mark a mine.")
+    update += "\u001b[2K\r"
+    update += "Press Q to quit, arrow to move, enter to select, and space to mark a mine.\n"
+    print(update)
 }
 
 
@@ -325,6 +323,7 @@ fun choose_size(): Pair<Int, Int> {
         print("Please enter the width of the grid (manualy): ")
         width_input = readLine()?.toIntOrNull() ?: 10
         Runtime.getRuntime().exec(arrayOf("sh","-c","stty raw -echo < /dev/tty")).waitFor()
+        print("\u001b[1A")
         print("\u001b[2K\r")
     }
     else{
@@ -428,6 +427,7 @@ fun choose_size(): Pair<Int, Int> {
         print("Please enter the height of the grid (manualy): ")
         height_input = readLine()?.toIntOrNull() ?: 10
         Runtime.getRuntime().exec(arrayOf("sh","-c","stty raw -echo < /dev/tty")).waitFor()
+        print("\u001b[1A")
         print("\u001b[2K\r")
     }
     else{
